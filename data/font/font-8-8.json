@@ -1,0 +1,7 @@
+{
+    "tiles": {
+        "fonts": {"row": 0, "col": 0}
+    },
+    "contiguous": true,
+    "priority": -10
+}

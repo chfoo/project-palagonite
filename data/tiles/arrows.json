@@ -1,0 +1,9 @@
+{
+    "tiles": {
+        "triangle_pointer_right": {"row": 0, "col": 0},
+        "triangle_pointer_down": {"row": 0, "col": 1}
+    },
+    "maps": {
+        "finger_pointer_up": {"row": 2, "col": 0, "width": 2, "height": 2}
+    }
+}

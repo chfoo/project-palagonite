@@ -1,0 +1,14 @@
+{
+    "tiles": {
+        "frame_top_left": {"col": 0, "row": 0},
+        "frame_top": {"col": 1, "row": 0},
+        "frame_top_right": {"col": 2, "row": 0},
+        "frame_left": {"col": 0, "row": 1},
+        "frame_right": {"col": 2, "row": 1},
+        "frame_bottom_left": {"col": 0, "row": 2},
+        "frame_bottom": {"col": 1, "row": 2},
+        "frame_bottom_right": {"col": 2, "row": 2},
+        "frame_top_more": {"col": 3, "row": 0},
+        "frame_bottom_more": {"col": 3, "row": 2}
+    }
+}
