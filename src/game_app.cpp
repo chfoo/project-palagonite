@@ -20,9 +20,6 @@ void GameApp::switch_scene(SceneName scene_name) {
 }
 
 void GameApp::init_tilesheet() {
-
     SetTileTable((const char*)TilesheetData::main::tile_data);
     SetFontTilesIndex(TilesheetData::main::tiles::fonts);
-//    SetSpritesTileBank(0, game_tiles);
-//    SetSpriteVisibility(true);
 }
