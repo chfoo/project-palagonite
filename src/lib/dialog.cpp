@@ -16,7 +16,7 @@ Dialog::Dialog(Input * input) : input(input), text(NULL), text_index(0),
 }
 
 void Dialog::update() {
-    if ((this->input->button_1_pressed & BTN_A) &&
+    if ((this->input->button_1_pressed & (BTN_A | BTN_B)) &&
             (this->state == DialogState::waiting_for_next ||
                     this->state == DialogState::waiting_for_dismiss)) {
        this->continue_next_paragraph();
