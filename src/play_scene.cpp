@@ -5,6 +5,7 @@ extern "C" {
 
 #include "lib/gfx/screen_util.hpp"
 #include "lib/inc/tilesheet.hpp"
+#include "lib/gfx/printer.hpp"
 #include "play_scene.hpp"
 
 PlayScene::PlayScene(GameApp * app) : BaseScene(app), scroll_tile_offset_x(0) {
@@ -81,14 +82,20 @@ void PlayScene::set_up_sprites() {
 }
 
 void PlayScene::draw_init_tracks() {
-    for (uint8_t column = 0; column < this->TRACK_CELLS_VISIBLE_AHEAD; column++) {
+    for (uint8_t column = 0; column <= this->TRACK_CELLS_VISIBLE_AHEAD; column++) {
         draw_track_column(column);
     }
 }
 
 void PlayScene::update() {
     this->update_player();
+    this->update_hud();
     this->update_scroll();
+}
+
+void PlayScene::update_hud() {
+    this->overlay_printer.set_cursor(2, 4);
+    this->overlay_printer.print_int(this->level_model.player_cell_index, 4);
 }
 
 void PlayScene::update_player() {
@@ -113,9 +120,15 @@ void PlayScene::update_player() {
 }
 
 void PlayScene::update_scroll() {
-    if (this->app->input.button_1_pressed & BTN_A) {
-        this->set_scroll(this->level_model.player_cell_index + 1, 0);
-        this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
+    if (this->app->input.button_1_down & BTN_A) {
+        uint8_t new_sub_cell_index = this->level_model.player_cell_sub_index + 32;
+
+        if (new_sub_cell_index < this->level_model.player_cell_sub_index) {
+            this->set_scroll(this->level_model.player_cell_index + 1, new_sub_cell_index);
+            this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
+        } else {
+            this->set_scroll(this->level_model.player_cell_index, new_sub_cell_index);
+        }
     }
 }
 
@@ -125,20 +138,27 @@ void PlayScene::tear_down() {
 
 void PlayScene::set_scroll(TrackCellIndex_t cell_index, TrackCellSubIndex_t cell_sub_index) {
     this->level_model.move_player_cell(cell_index, cell_sub_index);
-    this->scroll_tile_offset_x = cell_index % VRAM_TILES_H;
+    this->scroll_tile_offset_x = (cell_index * this->TRACK_CELL_TO_TILE_SCALE) % VRAM_TILES_H;
+    Screen.scrollX = this->scroll_tile_offset_x * TILE_WIDTH + this->TRACK_CELL_TO_TILE_SCALE * TILE_WIDTH * cell_sub_index / 255;
 }
 
 void PlayScene::draw_track_column(TrackCellIndex_t cell_index) {
     TrackCellType cells[4];
     this->level_model.get_track_cell_column(cell_index, cells);
 
+    const uint8_t tile_x = this->TRACK_PLAYER_TILE_X + scroll_tile_offset_x +
+            (cell_index - this->level_model.player_cell_index) * this->TRACK_CELL_TO_TILE_SCALE;
+
     for (uint8_t track_index = 0; track_index < 4; track_index++) {
         SetTile(
-                this->TRACK_PLAYER_TILE_X - scroll_tile_offset_x +
-                    (cell_index - this->level_model.player_cell_index) * this->TRACK_CELL_TO_TILE_SCALE,
+                tile_x,
                 this->FIRST_TRACK_TILE_Y +
                         (TRACK_TILE_HEIGHT + TRACK_TILE_SPACING) * track_index,
                 10
         );
     }
+
+    Lib::Gfx::Printer printer;
+    printer.set_origin(tile_x, 0);
+    printer.print_int(cell_index, 2, true);
 }

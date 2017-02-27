@@ -37,6 +37,7 @@ protected:
     void set_up_hud();
     void set_up_sprites();
     void draw_init_tracks();
+    void update_hud();
     void update_player();
     void update_scroll();
     void set_scroll(TrackCellIndex_t cell_index, TrackCellSubIndex_t cell_sub_index);
