@@ -1,0 +1,14 @@
+{
+    "tiles": {
+        "controls_up": {"row": 0, "col": 0},
+        "controls_down": {"row": 0, "col": 1},
+        "controls_left": {"row": 0, "col": 2},
+        "controls_right": {"row": 0, "col": 3},
+        "controls_l": {"row": 1, "col": 0},
+        "controls_r": {"row": 1, "col": 1},
+        "controls_a": {"row": 2, "col": 0},
+        "controls_b": {"row": 2, "col": 1},
+        "controls_x": {"row": 2, "col": 2},
+        "controls_y": {"row": 2, "col": 3}
+    }
+}

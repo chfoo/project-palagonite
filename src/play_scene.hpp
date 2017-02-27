@@ -8,10 +8,10 @@
 class PlayScene: public BaseScene {
 protected:
     static const uint8_t PLAYER_SPRITE_INDEX = 0;
-    static const uint8_t TRACK_0_CONTROLS_SPRITE_INDEX = 1;
-    static const uint8_t TRACK_1_CONTROLS_SPRITE_INDEX = 2;
-    static const uint8_t TRACK_2_CONTROLS_SPRITE_INDEX = 3;
-    static const uint8_t TRACK_3_CONTROLS_SPRITE_INDEX = 4;
+    static const uint8_t TRACK_0_CONTROLS_SPRITE_INDEX = 4;
+    static const uint8_t TRACK_1_CONTROLS_SPRITE_INDEX = 5;
+    static const uint8_t TRACK_2_CONTROLS_SPRITE_INDEX = 6;
+    static const uint8_t TRACK_3_CONTROLS_SPRITE_INDEX = 7;
     static const uint8_t OVERLAY_HEIGHT = 8;
     static const uint8_t TRACK_CELL_TO_TILE_SCALE = 2;
     static const uint8_t TRACK_CELLS_VISIBLE_BEHIND = 2;

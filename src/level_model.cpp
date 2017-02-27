@@ -18,8 +18,15 @@ void LevelModel::move_player_cell(TrackCell_t cell_index,
 void LevelModel::get_track_cell_column(TrackCellIndex_t cell_index,
         TrackCellType (&track_cells)[4]) {
     // TODO: this is a stub
-    track_cells[0] = TrackCellType::ground;
-    track_cells[1] = TrackCellType::ground;
-    track_cells[2] = TrackCellType::ground;
-    track_cells[3] = TrackCellType::ground;
+    if (cell_index & 0x01 == 1) {
+        track_cells[0] = TrackCellType::ground;
+        track_cells[1] = TrackCellType::empty;
+        track_cells[2] = TrackCellType::ground;
+        track_cells[3] = TrackCellType::ground;
+    } else {
+        track_cells[0] = TrackCellType::ground;
+        track_cells[1] = TrackCellType::ground;
+        track_cells[2] = TrackCellType::empty;
+        track_cells[3] = TrackCellType::empty;
+    }
 }

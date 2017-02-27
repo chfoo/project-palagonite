@@ -27,6 +27,8 @@ def generate_palette():
         yield (red, green, blue)
 
 
+TRANSPARENT_COLOR = 0xdaffda
+
 class TileAdder:
     def __init__(self, image_tile_indexes: List[List[int]], 
                  tile_names: dict, tile_maps: dict):
@@ -228,7 +230,7 @@ class TilesheetMaker:
         image = image.copy()
         alpha_band = image.split()[3]
         alpha_band = PIL.ImageOps.invert(alpha_band)
-        transparency_color = PIL.Image.new('RGB', (image.width, image.height), color=0xdaffda)
+        transparency_color = PIL.Image.new('RGB', (image.width, image.height), color=TRANSPARENT_COLOR)
         image.paste(transparency_color, mask=alpha_band)
         return image
     

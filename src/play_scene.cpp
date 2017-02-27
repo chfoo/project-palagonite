@@ -37,16 +37,19 @@ void PlayScene::set_up_sprites() {
     SetSpritesTileBank(SPRITE_BANK3,
             (const char *) TilesheetData::main::tile_data);
 
-    sprites[PLAYER_SPRITE_INDEX].tileIndex = TilesheetData::main::tiles::fonts
-            + 'P' - ' ';
+    MapSprite2(
+            this->PLAYER_SPRITE_INDEX,
+            (const char *) TilesheetData::main::maps::player,
+            SPRITE_BANK0
+    );
     sprites[TRACK_0_CONTROLS_SPRITE_INDEX].tileIndex =
-            TilesheetData::main::tiles::fonts + '^' - ' ';
+            TilesheetData::main::tiles::controls_up;
     sprites[TRACK_1_CONTROLS_SPRITE_INDEX].tileIndex =
-            TilesheetData::main::tiles::fonts + '<' - ' ';
+            TilesheetData::main::tiles::controls_left;
     sprites[TRACK_2_CONTROLS_SPRITE_INDEX].tileIndex =
-            TilesheetData::main::tiles::fonts + '>' - ' ';
+            TilesheetData::main::tiles::controls_right;
     sprites[TRACK_3_CONTROLS_SPRITE_INDEX].tileIndex =
-            TilesheetData::main::tiles::fonts + 'v' - ' ';
+            TilesheetData::main::tiles::controls_down;
 
     const uint8_t CONTROLS_X = TILE_WIDTH * this->TRACK_CONTROLS_TILE_X;
 
@@ -115,7 +118,8 @@ void PlayScene::update_player() {
            TILE_HEIGHT * (this->FIRST_TRACK_TILE_Y +
                    (this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING)
                    * this->level_model.player_track_index),
-           1, 1
+           TilesheetData::main::maps::player_width,
+           TilesheetData::main::maps::player_height
     );
 }
 
@@ -150,12 +154,18 @@ void PlayScene::draw_track_column(TrackCellIndex_t cell_index) {
             (cell_index - this->level_model.player_cell_index) * this->TRACK_CELL_TO_TILE_SCALE;
 
     for (uint8_t track_index = 0; track_index < 4; track_index++) {
-        SetTile(
-                tile_x,
-                this->FIRST_TRACK_TILE_Y +
-                        (TRACK_TILE_HEIGHT + TRACK_TILE_SPACING) * track_index,
-                10
-        );
+        const uint8_t tile_y = this->FIRST_TRACK_TILE_Y +
+                (TRACK_TILE_HEIGHT + TRACK_TILE_SPACING) * track_index;
+
+        switch (cells[track_index]) {
+        case TrackCellType::empty:
+            Fill(tile_x, tile_y, 2, 2, 0);
+            break;
+        case TrackCellType::ground:
+            DrawMap2(tile_x, tile_y,
+                    (const char *) TilesheetData::main::maps::track_ground);
+            break;
+        }
     }
 
     Lib::Gfx::Printer printer;
