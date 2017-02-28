@@ -6,9 +6,11 @@ extern "C" {
 #include "lib/gfx/screen_util.hpp"
 #include "lib/inc/tilesheet.hpp"
 #include "lib/gfx/printer.hpp"
+#include "lib/tables.hpp"
 #include "play_scene.hpp"
 
-PlayScene::PlayScene(GameApp * app) : BaseScene(app), scroll_tile_offset_x(0) {
+PlayScene::PlayScene(GameApp * app) : BaseScene(app), scroll_tile_offset_x(0),
+        scroll_speed(0), scroll_next_cell_counter(false) {
 
 }
 
@@ -53,33 +55,23 @@ void PlayScene::set_up_sprites() {
 
     const uint8_t CONTROLS_X = TILE_WIDTH * this->TRACK_CONTROLS_TILE_X;
 
-    MoveSprite(
-            TRACK_0_CONTROLS_SPRITE_INDEX,
-            CONTROLS_X,
-            TILE_HEIGHT * this->FIRST_TRACK_TILE_Y,
-            1, 1
-    );
-    MoveSprite(
-            TRACK_1_CONTROLS_SPRITE_INDEX,
-            CONTROLS_X,
-            TILE_HEIGHT * (this->FIRST_TRACK_TILE_Y +
-                    this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING),
-            1, 1
-    );
-    MoveSprite(
-            TRACK_2_CONTROLS_SPRITE_INDEX,
-            CONTROLS_X,
-            TILE_HEIGHT * (this->FIRST_TRACK_TILE_Y +
-                    (this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING) * 2),
-            1, 1
-    );
-    MoveSprite(
-            TRACK_3_CONTROLS_SPRITE_INDEX,
-            CONTROLS_X,
-            TILE_HEIGHT * (this->FIRST_TRACK_TILE_Y +
-                    (this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING) * 3),
-            1, 1
-    );
+#define move_controls_sprite(track_index) { \
+    MoveSprite( \
+            TRACK_ ##track_index ## _CONTROLS_SPRITE_INDEX, \
+            CONTROLS_X, \
+            TILE_HEIGHT * ( \
+                this->FIRST_TRACK_TILE_Y + \
+                (this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING) \
+                * track_index) + TILE_HEIGHT / 2, \
+            1, 1 \
+    ); \
+}
+    move_controls_sprite(0);
+    move_controls_sprite(1);
+    move_controls_sprite(2);
+    move_controls_sprite(3);
+
+#undef move_controls_sprite
 
     SetSpriteVisibility(true);
 }
@@ -124,14 +116,43 @@ void PlayScene::update_player() {
 }
 
 void PlayScene::update_scroll() {
-    if (this->app->input.button_1_down & BTN_A) {
-        uint8_t new_sub_cell_index = this->level_model.player_cell_sub_index + 32;
+//    if (this->app->input.button_1_down & BTN_A) {
+//        if (this->scroll_speed < 32) {
+//            this->scroll_speed += 1;
+//        }
+//    } else if (this->scroll_speed) {
+//        this->scroll_speed -= 1;
+//    }
+//
+//    if (this->scroll_speed) {
+//        uint8_t new_sub_cell_index = this->level_model.player_cell_sub_index + this->scroll_speed;
+//
+//        if (new_sub_cell_index < this->level_model.player_cell_sub_index) {
+//            this->set_scroll(this->level_model.player_cell_index + 1, new_sub_cell_index);
+//            this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
+//        } else {
+//            this->set_scroll(this->level_model.player_cell_index, new_sub_cell_index);
+//        }
+//    }
+    if ((this->app->input.button_1_pressed & BTN_A) && this->scroll_next_cell_counter == 0) {
+        this->scroll_next_cell_counter = 1;
+    }
 
-        if (new_sub_cell_index < this->level_model.player_cell_sub_index) {
-            this->set_scroll(this->level_model.player_cell_index + 1, new_sub_cell_index);
-            this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
-        } else {
+    if (this->scroll_next_cell_counter != 0) {
+        if (this->scroll_next_cell_counter != 255) {
+            uint8_t new_sub_cell_index = pgm_read_byte_near(&Lib::Tables::EASE_IN_OUT_LOOKUP_TABLE_U8[this->scroll_next_cell_counter]);
             this->set_scroll(this->level_model.player_cell_index, new_sub_cell_index);
+
+            uint8_t prev_scroll_counter = this->scroll_next_cell_counter;
+            this->scroll_next_cell_counter += 32;
+
+            if (this->scroll_next_cell_counter < prev_scroll_counter) {
+                this->scroll_next_cell_counter = 255;
+            }
+        } else {
+            this->set_scroll(this->level_model.player_cell_index + 1, 0);
+            this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
+            this->scroll_next_cell_counter = 0;
         }
     }
 }
@@ -164,6 +185,10 @@ void PlayScene::draw_track_column(TrackCellIndex_t cell_index) {
         case TrackCellType::ground:
             DrawMap2(tile_x, tile_y,
                     (const char *) TilesheetData::main::maps::track_ground);
+            break;
+        case TrackCellType::obstacle:
+            DrawMap2(tile_x, tile_y,
+                    (const char *) TilesheetData::main::maps::track_obstacle);
             break;
         }
     }

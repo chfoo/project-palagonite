@@ -1,5 +1,6 @@
 {
     "maps": {
-        "track_ground": {"col": 0, "row": 2, "width": 2, "height": 2}
+        "track_ground": {"col": 2, "row": 0, "width": 2, "height": 2},
+        "track_obstacle": {"col": 6, "row": 0, "width": 2, "height": 2}
     }
 }

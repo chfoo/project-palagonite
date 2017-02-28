@@ -9,6 +9,7 @@ typedef uint8_t TrackCellSubIndex_t;
 enum class TrackCellType : TrackCell_t {
     empty = 0,
     ground = 1,
+    obstacle = 2,
 };
 
 

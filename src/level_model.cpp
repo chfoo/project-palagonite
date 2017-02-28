@@ -21,7 +21,7 @@ void LevelModel::get_track_cell_column(TrackCellIndex_t cell_index,
     if (cell_index & 0x01 == 1) {
         track_cells[0] = TrackCellType::ground;
         track_cells[1] = TrackCellType::empty;
-        track_cells[2] = TrackCellType::ground;
+        track_cells[2] = TrackCellType::obstacle;
         track_cells[3] = TrackCellType::ground;
     } else {
         track_cells[0] = TrackCellType::ground;
