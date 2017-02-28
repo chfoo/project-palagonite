@@ -154,7 +154,9 @@ class TilesheetMaker:
         
         header_buffer = io.StringIO()
         header_buffer.writelines([
-            '#include <avr/pgmspace.h>\n'
+            '// This file was automatically generated from tilesheet.py\n',
+            '// Do not edit!\n',
+            '#include <avr/pgmspace.h>\n',
             'namespace TilesheetData {\n',
         ])
         

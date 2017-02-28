@@ -24,7 +24,9 @@ def escape(text):
 def main():
     header_buffer = io.StringIO()
     header_buffer.writelines([
-        'using namespace Lib::Inc;\n'
+        '// This file was automatically generated from menu.py\n',
+        '// Do not edit!\n',
+        'using namespace Lib::Inc;\n',
         'namespace MenuData {\n'
     ])
     
