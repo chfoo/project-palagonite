@@ -10,7 +10,7 @@ extern "C" {
 #include "play_scene.hpp"
 
 PlayScene::PlayScene(GameApp * app) : BaseScene(app), scroll_tile_offset_x(0),
-        scroll_speed(0), scroll_next_cell_counter(false) {
+        scroll_next_cell_counter(false) {
 
 }
 
@@ -94,66 +94,66 @@ void PlayScene::update_hud() {
 }
 
 void PlayScene::update_player() {
-    if (this->app->input.button_1_pressed & BTN_UP) {
-        this->level_model.move_player_track(0);
-    } else if (this->app->input.button_1_pressed & BTN_LEFT) {
-       this->level_model.move_player_track(1);
-    } else if (this->app->input.button_1_pressed & BTN_RIGHT) {
-       this->level_model.move_player_track(2);
-    } else if (this->app->input.button_1_pressed & BTN_DOWN) {
-       this->level_model.move_player_track(3);
+    if (this->scroll_next_cell_counter != 0) {
+        return;
     }
 
-    MoveSprite(
-           PLAYER_SPRITE_INDEX,
-           TILE_WIDTH * this->TRACK_PLAYER_TILE_X,
-           TILE_HEIGHT * (this->FIRST_TRACK_TILE_Y +
-                   (this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING)
-                   * this->level_model.player_track_index),
-           TilesheetData::main::maps::player_width,
-           TilesheetData::main::maps::player_height
-    );
+    if ((this->app->input.button_1_pressed & BTN_A) &&
+            this->level_model.is_next_cell_traversable()) {
+        this->start_scrolling();
+        return;
+    }
+
+    int8_t next_track = -1;
+
+    if (this->app->input.button_1_pressed & BTN_UP) {
+        next_track = 0;
+    } else if (this->app->input.button_1_pressed & BTN_LEFT) {
+        next_track = 1;
+    } else if (this->app->input.button_1_pressed & BTN_RIGHT) {
+        next_track = 2;
+    } else if (this->app->input.button_1_pressed & BTN_DOWN) {
+        next_track = 3;
+    }
+
+    if (next_track != -1 && this->level_model.is_track_traversable(next_track)) {
+        this->level_model.move_player_track(next_track);
+
+        MoveSprite(
+               PLAYER_SPRITE_INDEX,
+               TILE_WIDTH * this->TRACK_PLAYER_TILE_X,
+               TILE_HEIGHT * (this->FIRST_TRACK_TILE_Y +
+                       (this->TRACK_TILE_HEIGHT + this->TRACK_TILE_SPACING)
+                       * this->level_model.player_track_index),
+               TilesheetData::main::maps::player_width,
+               TilesheetData::main::maps::player_height
+        );
+    }
+}
+
+void PlayScene::start_scrolling() {
+    this->scroll_next_cell_counter = 1;
 }
 
 void PlayScene::update_scroll() {
-//    if (this->app->input.button_1_down & BTN_A) {
-//        if (this->scroll_speed < 32) {
-//            this->scroll_speed += 1;
-//        }
-//    } else if (this->scroll_speed) {
-//        this->scroll_speed -= 1;
-//    }
-//
-//    if (this->scroll_speed) {
-//        uint8_t new_sub_cell_index = this->level_model.player_cell_sub_index + this->scroll_speed;
-//
-//        if (new_sub_cell_index < this->level_model.player_cell_sub_index) {
-//            this->set_scroll(this->level_model.player_cell_index + 1, new_sub_cell_index);
-//            this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
-//        } else {
-//            this->set_scroll(this->level_model.player_cell_index, new_sub_cell_index);
-//        }
-//    }
-    if ((this->app->input.button_1_pressed & BTN_A) && this->scroll_next_cell_counter == 0) {
-        this->scroll_next_cell_counter = 1;
+    if (this->scroll_next_cell_counter == 0) {
+        return;
     }
+    if (this->scroll_next_cell_counter != 255) {
+        uint8_t new_sub_cell_index = pgm_read_byte_near(&Lib::Tables::EASE_IN_OUT_LOOKUP_TABLE_U8[this->scroll_next_cell_counter]);
+        this->set_scroll(this->level_model.player_cell_index, new_sub_cell_index);
 
-    if (this->scroll_next_cell_counter != 0) {
-        if (this->scroll_next_cell_counter != 255) {
-            uint8_t new_sub_cell_index = pgm_read_byte_near(&Lib::Tables::EASE_IN_OUT_LOOKUP_TABLE_U8[this->scroll_next_cell_counter]);
-            this->set_scroll(this->level_model.player_cell_index, new_sub_cell_index);
+        uint8_t prev_scroll_counter = this->scroll_next_cell_counter;
+        this->scroll_next_cell_counter += 32;
 
-            uint8_t prev_scroll_counter = this->scroll_next_cell_counter;
-            this->scroll_next_cell_counter += 32;
-
-            if (this->scroll_next_cell_counter < prev_scroll_counter) {
-                this->scroll_next_cell_counter = 255;
-            }
-        } else {
-            this->set_scroll(this->level_model.player_cell_index + 1, 0);
-            this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
-            this->scroll_next_cell_counter = 0;
+        if (this->scroll_next_cell_counter < prev_scroll_counter) {
+            this->scroll_next_cell_counter = 255;
         }
+    } else {
+        this->level_model.move_player_next_cell();
+        this->set_scroll(this->level_model.player_cell_index, 0);
+        this->draw_track_column(this->level_model.player_cell_index + this->TRACK_CELLS_VISIBLE_AHEAD);
+        this->scroll_next_cell_counter = 0;
     }
 }
 
@@ -161,18 +161,25 @@ void PlayScene::tear_down() {
     SetSpriteVisibility(false);
 }
 
-void PlayScene::set_scroll(TrackCellIndex_t cell_index, TrackCellSubIndex_t cell_sub_index) {
-    this->level_model.move_player_cell(cell_index, cell_sub_index);
-    this->scroll_tile_offset_x = (cell_index * this->TRACK_CELL_TO_TILE_SCALE) % VRAM_TILES_H;
-    Screen.scrollX = this->scroll_tile_offset_x * TILE_WIDTH + this->TRACK_CELL_TO_TILE_SCALE * TILE_WIDTH * cell_sub_index / 255;
+void PlayScene::set_scroll(TrackCellIndex_t cell_index,
+        uint8_t cell_sub_index) {
+    this->scroll_tile_offset_x =
+            (cell_index * this->TRACK_CELL_TO_TILE_SCALE) % VRAM_TILES_H;
+    Screen.scrollX = this->scroll_tile_offset_x * TILE_WIDTH +
+            this->TRACK_CELL_TO_TILE_SCALE * TILE_WIDTH * cell_sub_index / 255;
 }
 
 void PlayScene::draw_track_column(TrackCellIndex_t cell_index) {
     TrackCellType cells[4];
+    TrackCellType prev_cells[4];
+    TrackCellType next_cells[4];
     this->level_model.get_track_cell_column(cell_index, cells);
+    this->level_model.get_track_cell_column(cell_index - 1, prev_cells);
+    this->level_model.get_track_cell_column(cell_index + 1, next_cells);
 
     const uint8_t tile_x = this->TRACK_PLAYER_TILE_X + scroll_tile_offset_x +
-            (cell_index - this->level_model.player_cell_index) * this->TRACK_CELL_TO_TILE_SCALE;
+            (cell_index - this->level_model.player_cell_index) *
+            this->TRACK_CELL_TO_TILE_SCALE;
 
     for (uint8_t track_index = 0; track_index < 4; track_index++) {
         const uint8_t tile_y = this->FIRST_TRACK_TILE_Y +
@@ -181,14 +188,29 @@ void PlayScene::draw_track_column(TrackCellIndex_t cell_index) {
         switch (cells[track_index]) {
         case TrackCellType::empty:
             Fill(tile_x, tile_y, 2, 2, 0);
+
+            if (prev_cells[track_index] != TrackCellType::empty) {
+                DrawMap2(tile_x, tile_y, (const char *) TilesheetData::main::maps::track_ground_right);
+            }
+
+            if (next_cells[track_index] != TrackCellType::empty) {
+                DrawMap2(tile_x + 1, tile_y, (const char *) TilesheetData::main::maps::track_ground_left);
+            }
+
             break;
         case TrackCellType::ground:
             DrawMap2(tile_x, tile_y,
                     (const char *) TilesheetData::main::maps::track_ground);
+
             break;
         case TrackCellType::obstacle:
             DrawMap2(tile_x, tile_y,
                     (const char *) TilesheetData::main::maps::track_obstacle);
+            break;
+
+        case TrackCellType::treasure:
+            DrawMap2(tile_x, tile_y,
+                    (const char *) TilesheetData::main::maps::track_treasure);
             break;
         }
     }

@@ -25,7 +25,6 @@ protected:
     Lib::Gfx::Printer overlay_printer;
     LevelModel level_model;
     uint8_t scroll_tile_offset_x;
-    uint8_t scroll_speed;
     uint8_t scroll_next_cell_counter;
 
 public:
@@ -41,7 +40,8 @@ protected:
     void draw_init_tracks();
     void update_hud();
     void update_player();
+    void start_scrolling();
     void update_scroll();
-    void set_scroll(TrackCellIndex_t cell_index, TrackCellSubIndex_t cell_sub_index);
+    void set_scroll(TrackCellIndex_t cell_index, uint8_t cell_sub_index);
     void draw_track_column(TrackCellIndex_t cell_index);
 };

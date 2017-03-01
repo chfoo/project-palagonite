@@ -1,6 +1,9 @@
 {
     "maps": {
-        "track_ground": {"col": 2, "row": 0, "width": 2, "height": 2},
-        "track_obstacle": {"col": 6, "row": 0, "width": 2, "height": 2}
+        "track_ground_left": {"row": 0, "col": 0, "width": 1, "height": 2},
+        "track_ground": {"row": 0, "col": 1, "width": 2, "height": 2},
+        "track_ground_right": {"row": 0, "col": 3, "width": 1, "height": 2},
+        "track_treasure": {"row": 0, "col": 4, "width": 2, "height": 2},
+        "track_obstacle": {"row": 0, "col": 6, "width": 2, "height": 2}
     }
 }
