@@ -23,7 +23,6 @@ COMMON = -mmcu=$(MCU)
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
 CFLAGS += -Wall -std=gnu99 -DF_CPU=28636360UL -fsigned-char -ffunction-sections -fno-toplevel-reorder
-#CFLAGS += -O3
 CFLAGS += -MD -MP -MT $(*F).o -MF dep/$(@F).d 
 CFLAGS += $(KERNEL_OPTIONS)
 CFLAGS += -fno-exceptions -std=gnu++11
@@ -32,6 +31,11 @@ CFLAGS += -fno-exceptions -std=gnu++11
 ASMFLAGS = $(COMMON)
 ASMFLAGS += $(CFLAGS)
 ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
+
+## Debugging / Optimization
+CFLAGS += -O2
+#ASMFLAGS += -g3 -Wa,-gdwarf2
+#CFLAGS += -g3 -gdwarf-2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
@@ -45,10 +49,6 @@ HEX_FLASH_FLAGS = -R .eeprom
 HEX_EEPROM_FLAGS = -j .eeprom
 HEX_EEPROM_FLAGS += --set-section-flags=.eeprom="alloc,load"
 HEX_EEPROM_FLAGS += --change-section-lma .eeprom=0 --no-change-warnings
-
-## Debugging
-ASMFLAGS += -g3 -Wa,-gdwarf2
-CFLAGS += -g3 -gdwarf-2
 
 ## Objects that must be built in order to link
 GAME_OBJECTS = $(subst $(SRC_DIR)/,,$(GAME_SOURCES:.cpp=.o))
